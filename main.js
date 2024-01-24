@@ -1,12 +1,12 @@
 // main.js
 let config = {
     type: Phaser.AUTO,
-    width: 1536,
-    height: 640,
+    width: window.innerWidth,
+    height: window.innerHeight,
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 20000}, // Desactivamos la gravedad en el eje Y
+            gravity: { y: 0}, // Desactivamos la gravedad en el eje Y
             debug: false
         }
     },
@@ -26,13 +26,16 @@ function preload() {
 }
 
 function create() {
+
+    let backgroundImage = this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setName('background');
+    backgroundImage.setDisplaySize(window.innerWidth, window.innerHeight);
+
     // Creación de escenario y objetos
-    this.add.image(768, 320, 'background').setName('background');
     player = this.physics.add.sprite(700, 300, 'player');
     player.setCollideWorldBounds(true);
     player.setBounce(0.2);
 
-    this.physics.add.collider(player, this.children.getByName('ground'));
+    this.physics.add.collider(player, this.children.getByName('background'));
 
     this.anims.create({
         key: 'left',

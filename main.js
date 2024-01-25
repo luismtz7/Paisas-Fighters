@@ -6,7 +6,7 @@ let config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 0}, // Desactivamos la gravedad en el eje Y
+            gravity: { y: 90000 }, // Desactivamos la gravedad en el eje Y
             debug: false
         }
     },
@@ -23,7 +23,15 @@ function preload() {
     // Carga de imágenes y otros recursos
     this.load.image('background', 'assets/background.png');
     this.load.spritesheet('player', 'assets/player.png', { frameWidth: 32, frameHeight: 56 });
+    // Carga de spritesheet del segundo jugador "playerTwo"
+    this.load.spritesheet('playerTwo', 'assets/playerTwo.png', { frameWidth: 32, frameHeight: 56 });
 }
+
+let playerHealth = 100;
+let playerTwoHealth = 100;
+let healthBar;
+let cursors;
+let cursorsPlayerTwo;
 
 function create() {
 
@@ -43,7 +51,6 @@ function create() {
         frameRate: 10,
         repeat: -1
     });
-
 
     this.anims.create({
         key: 'turn',
@@ -65,7 +72,6 @@ function create() {
         repeat: 1
     });
 
-
     this.anims.create({
         key: 'down',
         frames: this.anims.generateFrameNumbers('player', { start: 13, end: 16 }),
@@ -74,12 +80,60 @@ function create() {
     });
 
     cursors = this.input.keyboard.createCursorKeys();
+
+    healthBar = this.add.graphics();
+    updateHealthBar();
+
+    // Creación del segundo jugador
+    playerTwo = this.physics.add.sprite(800, 300, 'playerTwo');
+    playerTwo.setCollideWorldBounds(true);
+    playerTwo.setBounce(0.2);
+
+    this.physics.add.collider(playerTwo, this.children.getByName('background'));
+
+    this.anims.create({
+        key: 'leftPlayerTwo',
+        frames: this.anims.generateFrameNumbers('playerTwo', { start: 0, end: 3 }),
+        frameRate: 10,
+        repeat: -1
+    });
+
+    this.anims.create({
+        key: 'turnPlayerTwo',
+        frames: [{ key: 'playerTwo', frame: 4 }],
+        frameRate: 20,
+    });
+
+    this.anims.create({
+        key: 'rightPlayerTwo',
+        frames: this.anims.generateFrameNumbers('playerTwo', { start: 5, end: 8 }),
+        frameRate: 10,
+        repeat: -1
+    });
+
+    this.anims.create({
+        key: 'upPlayerTwo',
+        frames: this.anims.generateFrameNumbers('playerTwo', { start: 9, end: 12 }),
+        frameRate: 10,
+        repeat: 1
+    });
+
+    this.anims.create({
+        key: 'downPlayerTwo',
+        frames: this.anims.generateFrameNumbers('playerTwo', { start: 13, end: 16 }),
+        frameRate: 10,
+        repeat: 1
+    });
+
+    cursorsPlayerTwo = this.input.keyboard.createCursorKeys();
 }
 
 function update() {
-// Agregar movimiento del jugador con las teclas de flecha
+    // Agregar movimiento del jugador con las teclas de flecha
     // Reiniciar velocidad del jugador
     player.setVelocity(0, 0);
+    // Reiniciar velocidad del segundo jugador
+    playerTwo.setVelocity(0, 0);
 
     // Declarar variables para asignar movimiento son las teclas "W,A,S,D"
     let keyA;
@@ -92,32 +146,31 @@ function update() {
     keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
 
-    if(keyA.isDown) {
-        player.setVelocityX(-160)
-     }
-    if(keyS.isDown) {
-        player.setVelocityY(160)
-     }
-    if(keyD.isDown) {
-        player.setVelocityX(160)
-     }
-     if(keyW.isDown) {
-        player.setVelocityY(-160)
-     }
-
-
-    // Verificar las teclas presionadas
-    if (cursors.left.isDown) {
+    if (keyA.isDown) {
         player.setVelocityX(-160);
-    } 
-    if (cursors.right.isDown) {
-        player.setVelocityX(160);
-    } 
-    if (cursors.up.isDown) {
-        player.setVelocityY(-160);
-    } 
-    if (cursors.down.isDown) {
+    }
+    if (keyS.isDown) {
         player.setVelocityY(160);
+    }
+    if (keyD.isDown) {
+        player.setVelocityX(160);
+    }
+    if (keyW.isDown) {
+        player.setVelocityY(-160);
+    }
+
+    // Verificar las teclas presionadas para el segundo jugador
+    if (cursorsPlayerTwo.left.isDown) {
+        playerTwo.setVelocityX(-160);
+    }
+    if (cursorsPlayerTwo.right.isDown) {
+        playerTwo.setVelocityX(160);
+    }
+    if (cursorsPlayerTwo.up.isDown) {
+        playerTwo.setVelocityY(-160);
+    }
+    if (cursorsPlayerTwo.down.isDown) {
+        playerTwo.setVelocityY(160);
     }
 
     // Determinar la animación basada en la velocidad
@@ -133,5 +186,45 @@ function update() {
         player.anims.play('turn', true);
     }
 
+    // Determinar la animación basada en la velocidad para el segundo jugador
+    if (playerTwo.body.velocity.x < 0) {
+        playerTwo.anims.play('leftPlayerTwo', true);
+    } else if (playerTwo.body.velocity.x > 0) {
+        playerTwo.anims.play('rightPlayerTwo', true);
+    } else if (playerTwo.body.velocity.y < 0) {
+        playerTwo.anims.play('upPlayerTwo', true);
+    } else if (playerTwo.body.velocity.y > 0) {
+        playerTwo.anims.play('downPlayerTwo', true);
+    } else {
+        playerTwo.anims.play('turnPlayerTwo', true);
+    }
 }
-    
+
+function updateHealthBar() {
+    healthBar.clear();
+
+    // Color del borde para el jugador uno
+    healthBar.fillStyle(0x000000, 1); // Color negro
+    healthBar.fillRect(10 - 2, 20 - 2, (playerHealth + 2) * 5.92, 20 + 4); // Ajustar el tamaño para incluir el borde
+
+    // Color de relleno para el jugador uno
+    healthBar.fillStyle(0x39EF00, 1); // Color verde
+    healthBar.fillRect(10, 20, playerHealth * 6, 20); // Ancho de la barra proporcional a los puntos de vida
+
+    // Color del borde para el jugador dos
+    healthBar.fillStyle(0x000000, 1); // Color negro
+    healthBar.fillRect(700 - 2, 20 - 2, (playerTwoHealth + 2) * 5.92, 20 + 4); // Ajustar el tamaño para incluir el borde
+
+    // Color de relleno para el jugador dos
+    healthBar.fillStyle(0x39EF00, 1); // Color verde
+    healthBar.fillRect(700, 20, playerTwoHealth * 6, 20); // Ancho de la barra proporcional a los puntos de vida del jugador dos
+}
+
+
+function checkGameOver() {
+    if (playerHealth <= 0) {
+        // Lógica para el fin del juego
+        console.log("Game Over");
+        // Agregar más opciones para el fin del juego:
+    }
+}

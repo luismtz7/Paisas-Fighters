@@ -6,7 +6,7 @@ let config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 90000 }, // Desactivamos la gravedad en el eje Y
+            gravity: { y: 90000 },
             debug: false
         }
     },
@@ -33,6 +33,12 @@ let healthBar;
 let cursors;
 let cursorsPlayerTwo;
 
+// Lógica de ataque
+let attackKeyPlayer;
+let attackKeyPlayerTwo;
+let isAttackingPlayer = false;
+let isAttackingPlayerTwo = false;
+
 function create() {
 
     let backgroundImage = this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setName('background');
@@ -42,6 +48,11 @@ function create() {
     player = this.physics.add.sprite(700, 300, 'player');
     player.setCollideWorldBounds(true);
     player.setBounce(0.2);
+
+     // Establecer el tamaño de la hitbox del jugador
+     player.setSize(32, 56);
+     // Centrar la hitbox (opcional, depende del tamaño de tu sprite)
+     player.setOffset(0, 0);
 
     this.physics.add.collider(player, this.children.getByName('background'));
 
@@ -79,6 +90,13 @@ function create() {
         repeat: 1
     });
 
+    this.anims.create({
+        key: 'attack',
+        frames: this.anims.generateFrameNumbers('player', { start: 13, end: 16 }),
+        frameRate: 10,
+        repeat: 0, // No se repite la animación
+    });
+
     cursors = this.input.keyboard.createCursorKeys();
 
     healthBar = this.add.graphics();
@@ -88,6 +106,11 @@ function create() {
     playerTwo = this.physics.add.sprite(800, 300, 'playerTwo');
     playerTwo.setCollideWorldBounds(true);
     playerTwo.setBounce(0.2);
+
+    // Establecer el tamaño de la hitbox del segundo jugador
+    playerTwo.setSize(32, 56);
+    // Centrar la hitbox (opcional, depende del tamaño de tu sprite)
+    playerTwo.setOffset(0, 0);
 
     this.physics.add.collider(playerTwo, this.children.getByName('background'));
 
@@ -125,7 +148,18 @@ function create() {
         repeat: 1
     });
 
+    this.anims.create({
+        key: 'attackPlayerTwo',
+        frames: this.anims.generateFrameNumbers('playerTwo', { start: 13, end: 16 }),
+        frameRate: 10,
+        repeat: 0, // No se repite la animación
+    });
+
     cursorsPlayerTwo = this.input.keyboard.createCursorKeys();
+
+    //Ataque
+    attackKeyPlayer = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+    attackKeyPlayerTwo = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
 }
 
 function update() {
@@ -197,6 +231,39 @@ function update() {
         playerTwo.anims.play('downPlayerTwo', true);
     } else {
         playerTwo.anims.play('turnPlayerTwo', true);
+    }
+
+    if (attackKeyPlayer.isDown && !isAttackingPlayer) {
+        isAttackingPlayer = true;
+        player.anims.play('attack', true);
+        this.time.delayedCall(300, () => {
+            isAttackingPlayer = false;
+            player.anims.play('turn', true);
+        });
+
+        // Verificar si el jugador dos está en rango de ataque
+        if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 20) {
+            // Aplicar daño al jugador dos
+            playerTwoHealth -= 10;
+            updateHealthBar();
+        }
+    }
+
+    // Lógica de ataque para el jugador dos
+    if (attackKeyPlayerTwo.isDown && !isAttackingPlayerTwo) {
+        isAttackingPlayerTwo = true;
+        playerTwo.anims.play('attackPlayerTwo', true);
+        this.time.delayedCall(300, () => {
+            isAttackingPlayerTwo = false;
+            playerTwo.anims.play('turnPlayerTwo', true);
+        });
+
+        // Verificar si el jugador uno está en rango de ataque
+        if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 20) {
+            // Aplicar daño al jugador uno
+            playerHealth -= 10;
+            updateHealthBar();
+        }
     }
 }
 

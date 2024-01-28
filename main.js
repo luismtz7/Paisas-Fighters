@@ -249,6 +249,23 @@ function update() {
         }
     }
 
+     // Lógica de ataque para el jugador uno
+     if (attackKeyPlayer.isDown && !isAttackingPlayer) {
+        isAttackingPlayer = true;
+        player.anims.play('attack', true);
+        this.time.delayedCall(300, () => {
+            isAttackingPlayer = false;
+            player.anims.play('turn', true);
+        });
+
+        // Verificar si el jugador dos está en rango de ataque
+        if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 20) {
+            // Aplicar daño al jugador dos
+            playerTwoHealth = Math.max(playerTwoHealth - 10, 0); // Evitar que la salud sea negativa
+            updateHealthBar();
+        }
+    }
+
     // Lógica de ataque para el jugador dos
     if (attackKeyPlayerTwo.isDown && !isAttackingPlayerTwo) {
         isAttackingPlayerTwo = true;
@@ -261,7 +278,7 @@ function update() {
         // Verificar si el jugador uno está en rango de ataque
         if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 20) {
             // Aplicar daño al jugador uno
-            playerHealth -= 10;
+            playerHealth = Math.max(playerHealth - 10, 0); // Evitar que la salud sea negativa
             updateHealthBar();
         }
     }
@@ -270,28 +287,44 @@ function update() {
 function updateHealthBar() {
     healthBar.clear();
 
+    // Configuración del diseño de las barras de vida
+    const barWidth = (window.innerWidth - 40 - 100) / 2; // Ancho de cada barra (restando los márgenes y la separación en el medio)
+    const barHeight = 20; // Altura de las barras
+    const margin = 20; // Márgenes laterales
+    const separation = 100; // Separación entre las barras
+
+    // Barra de vida para el jugador uno
+    const playerBarX = margin;
+    const playerBarY = 20;
+
     // Color del borde para el jugador uno
     healthBar.fillStyle(0x000000, 1); // Color negro
-    healthBar.fillRect(10 - 2, 20 - 2, (playerHealth + 2) * 5.92, 20 + 4); // Ajustar el tamaño para incluir el borde
+    healthBar.fillRect(playerBarX - 2, playerBarY - 2, barWidth + 4, barHeight + 4); // Ajustar el tamaño para incluir el borde
 
     // Color de relleno para el jugador uno
     healthBar.fillStyle(0x39EF00, 1); // Color verde
-    healthBar.fillRect(10, 20, playerHealth * 6, 20); // Ancho de la barra proporcional a los puntos de vida
+    healthBar.fillRect(playerBarX, playerBarY, (playerHealth / 100) * barWidth, barHeight); // Ancho proporcional a los puntos de vida
+
+    // Barra de vida para el jugador dos
+    const playerTwoBarX = window.innerWidth - margin - barWidth;
+    const playerTwoBarY = 20;
 
     // Color del borde para el jugador dos
     healthBar.fillStyle(0x000000, 1); // Color negro
-    healthBar.fillRect(700 - 2, 20 - 2, (playerTwoHealth + 2) * 5.92, 20 + 4); // Ajustar el tamaño para incluir el borde
+    healthBar.fillRect(playerTwoBarX - 2, playerTwoBarY - 2, barWidth + 4, barHeight + 4); // Ajustar el tamaño para incluir el borde
+
+    // Asegurarse de que la barra de vida del jugador dos no sea menor que cero
+    const playerTwoBarWidth = Math.max((playerTwoHealth / 100) * barWidth, 0);
 
     // Color de relleno para el jugador dos
     healthBar.fillStyle(0x39EF00, 1); // Color verde
-    healthBar.fillRect(700, 20, playerTwoHealth * 6, 20); // Ancho de la barra proporcional a los puntos de vida del jugador dos
-}
+    healthBar.fillRect(playerTwoBarX, playerTwoBarY, playerTwoBarWidth, barHeight); // Ancho proporcional a los puntos de vida del jugador dos
 
+    if (playerHealth <= 0 || playerTwoHealth <= 0) {
+        // Muestra un alert de Game Over
+        alert("Game Over");
 
-function checkGameOver() {
-    if (playerHealth <= 0) {
-        // Lógica para el fin del juego
-        console.log("Game Over");
-        // Agregar más opciones para el fin del juego:
+        // Puedes agregar más lógica aquí, como reiniciar el juego
+        // o redirigir a otra página, según tus necesidades.
     }
 }

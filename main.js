@@ -22,9 +22,9 @@ let game = new Phaser.Game(config);
 function preload() {
     // Carga de imágenes y otros recursos
     this.load.image('background', 'assets/background.png');
-    this.load.spritesheet('player', 'assets/player.png', { frameWidth: 32, frameHeight: 56 });
+    this.load.spritesheet('player', 'assets/player.png', { frameWidth: 94, frameHeight: 120 });
     // Carga de spritesheet del segundo jugador "playerTwo"
-    this.load.spritesheet('playerTwo', 'assets/playerTwo.png', { frameWidth: 32, frameHeight: 56 });
+    this.load.spritesheet('playerTwo', 'assets/playerTwo.png', { frameWidth: 94, frameHeight: 120 });
 }
 
 let playerHealth = 100;
@@ -45,62 +45,19 @@ function create() {
     backgroundImage.setDisplaySize(window.innerWidth, window.innerHeight);
 
     // Creación de escenario y objetos
-    player = this.physics.add.sprite(700, 300, 'player');
+    // Cambia las coordenadas iniciales del jugador
+    player = this.physics.add.sprite(700, window.innerHeight - 120, 'player');
+
     player.setCollideWorldBounds(true);
     player.setBounce(0.2);
 
-     // Establecer el tamaño de la hitbox del jugador
-     player.setSize(32, 56);
-     // Centrar la hitbox (opcional, depende del tamaño de tu sprite)
-     player.setOffset(0, 0);
+    // Establecer el tamaño de la hitbox del jugador
+    player.setSize(94, 120);
+    // Centrar la hitbox (opcional, depende del tamaño de tu sprite)
+    player.setOffset(0, 0);
 
+    // Agregar colisionador con el suelo
     this.physics.add.collider(player, this.children.getByName('background'));
-
-    this.anims.create({
-        key: 'left',
-        frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
-        frameRate: 10,
-        repeat: -1
-    });
-
-    this.anims.create({
-        key: 'turn',
-        frames: [{ key: 'player', frame: 4 }],
-        frameRate: 20,
-    });
-
-    this.anims.create({
-        key: 'right',
-        frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
-        frameRate: 10,
-        repeat: -1
-    });
-
-    this.anims.create({
-        key: 'up',
-        frames: this.anims.generateFrameNumbers('player', { start: 9, end: 12 }),
-        frameRate: 10,
-        repeat: 1
-    });
-
-    this.anims.create({
-        key: 'down',
-        frames: this.anims.generateFrameNumbers('player', { start: 13, end: 16 }),
-        frameRate: 10,
-        repeat: 1
-    });
-
-    this.anims.create({
-        key: 'attack',
-        frames: this.anims.generateFrameNumbers('player', { start: 13, end: 16 }),
-        frameRate: 10,
-        repeat: 0, // No se repite la animación
-    });
-
-    cursors = this.input.keyboard.createCursorKeys();
-
-    healthBar = this.add.graphics();
-    updateHealthBar();
 
     // Creación del segundo jugador
     playerTwo = this.physics.add.sprite(800, 300, 'playerTwo');
@@ -108,58 +65,96 @@ function create() {
     playerTwo.setBounce(0.2);
 
     // Establecer el tamaño de la hitbox del segundo jugador
-    playerTwo.setSize(32, 56);
+    playerTwo.setSize(94, 120);
     // Centrar la hitbox (opcional, depende del tamaño de tu sprite)
     playerTwo.setOffset(0, 0);
 
+    // Agregar colisionador con el suelo
+    this.physics.add.collider(player, this.children.getByName('background'));
     this.physics.add.collider(playerTwo, this.children.getByName('background'));
+
+
+    this.anims.create({
+        key: 'left',
+        frames: this.anims.generateFrameNumbers('player', { start: 1, end: 5 }),
+        frameRate: 10,
+        repeat: -1
+    });
+
+    this.anims.create({
+        key: 'turn',
+        frames: [{ key: 'player', frame: 7 }],
+        frameRate: 20,
+    });
+
+    this.anims.create({
+        key: 'right',
+        frames: this.anims.generateFrameNumbers('player', { start: 9, end: 13 }),
+        frameRate: 10,
+        repeat: -1
+    });
+
+    this.anims.create({
+        key: 'attack',
+        frames: [{ key: 'player', frame: 0 }],
+        frameRate: 10,
+        repeat: 0
+    });
+
+    this.anims.create({
+        key: 'attackRight',
+        frames: [{ key: 'player', frame: 14 }],
+        frameRate: 10,
+        repeat: 0
+    });
+
+
+    cursors = this.input.keyboard.createCursorKeys();
+
+    healthBar = this.add.graphics();
+    updateHealthBar();
 
     this.anims.create({
         key: 'leftPlayerTwo',
-        frames: this.anims.generateFrameNumbers('playerTwo', { start: 0, end: 3 }),
+        frames: this.anims.generateFrameNumbers('playerTwo', { start: 1, end: 5 }),
         frameRate: 10,
         repeat: -1
     });
 
     this.anims.create({
         key: 'turnPlayerTwo',
-        frames: [{ key: 'playerTwo', frame: 4 }],
+        frames: [{ key: 'playerTwo', frame: 7 }],
         frameRate: 20,
     });
 
     this.anims.create({
         key: 'rightPlayerTwo',
-        frames: this.anims.generateFrameNumbers('playerTwo', { start: 5, end: 8 }),
+        frames: this.anims.generateFrameNumbers('playerTwo', { start: 9, end: 13 }),
         frameRate: 10,
         repeat: -1
     });
 
     this.anims.create({
-        key: 'upPlayerTwo',
-        frames: this.anims.generateFrameNumbers('playerTwo', { start: 9, end: 12 }),
-        frameRate: 10,
-        repeat: 1
-    });
-
-    this.anims.create({
-        key: 'downPlayerTwo',
-        frames: this.anims.generateFrameNumbers('playerTwo', { start: 13, end: 16 }),
-        frameRate: 10,
-        repeat: 1
-    });
-
-    this.anims.create({
         key: 'attackPlayerTwo',
-        frames: this.anims.generateFrameNumbers('playerTwo', { start: 13, end: 16 }),
+        frames: [{ key: 'playerTwo', frame: 0 }],
         frameRate: 10,
-        repeat: 0, // No se repite la animación
+        repeat: 0
+    });
+
+    this.anims.create({
+        key: 'attackPlayerTwoRight',
+        frames: [{ key: 'playerTwo', frame: 14 }],
+        frameRate: 10,
+        repeat: 0
     });
 
     cursorsPlayerTwo = this.input.keyboard.createCursorKeys();
 
     //Ataque
     attackKeyPlayer = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
-    attackKeyPlayerTwo = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
+    attackKeyPlayerRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+    attackKeyPlayerTwo = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O);
+    attackKeyPlayerTwoRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
 }
 
 function update() {
@@ -181,30 +176,30 @@ function update() {
     keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
 
     if (keyA.isDown) {
-        player.setVelocityX(-160);
+        player.setVelocityX(-260);
     }
     if (keyS.isDown) {
-        player.setVelocityY(160);
+        player.setVelocityY(260);
     }
     if (keyD.isDown) {
-        player.setVelocityX(160);
+        player.setVelocityX(260);
     }
     if (keyW.isDown) {
-        player.setVelocityY(-160);
+        player.setVelocityY(-260);
     }
 
     // Verificar las teclas presionadas para el segundo jugador
     if (cursorsPlayerTwo.left.isDown) {
-        playerTwo.setVelocityX(-160);
+        playerTwo.setVelocityX(-260);
     }
     if (cursorsPlayerTwo.right.isDown) {
-        playerTwo.setVelocityX(160);
+        playerTwo.setVelocityX(260);
     }
     if (cursorsPlayerTwo.up.isDown) {
-        playerTwo.setVelocityY(-160);
+        playerTwo.setVelocityY(-260);
     }
     if (cursorsPlayerTwo.down.isDown) {
-        playerTwo.setVelocityY(160);
+        playerTwo.setVelocityY(260);
     }
 
     // Determinar la animación basada en la velocidad
@@ -212,10 +207,6 @@ function update() {
         player.anims.play('left', true);
     } else if (player.body.velocity.x > 0) {
         player.anims.play('right', true);
-    } else if (player.body.velocity.y < 0) {
-        player.anims.play('up', true);
-    } else if (player.body.velocity.y > 0) {
-        player.anims.play('down', true);
     } else {
         player.anims.play('turn', true);
     }
@@ -225,61 +216,91 @@ function update() {
         playerTwo.anims.play('leftPlayerTwo', true);
     } else if (playerTwo.body.velocity.x > 0) {
         playerTwo.anims.play('rightPlayerTwo', true);
-    } else if (playerTwo.body.velocity.y < 0) {
-        playerTwo.anims.play('upPlayerTwo', true);
-    } else if (playerTwo.body.velocity.y > 0) {
-        playerTwo.anims.play('downPlayerTwo', true);
     } else {
         playerTwo.anims.play('turnPlayerTwo', true);
     }
 
+     // Lógica de ataque para el jugador uno Left
+     if (attackKeyPlayerRight.isDown && !isAttackingPlayer) {
+        isAttackingPlayer = true;
+        player.anims.play('attackRight', true);
+        
+        // Establecer el frame de golpe durante 1 segundo
+        this.time.delayedCall(250, () => {
+            isAttackingPlayer = false;
+            player.anims.play('turn', true);
+        });
+
+        // Verificar si el jugador dos está en rango de ataque
+        if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 20) {
+            // Aplicar daño al jugador dos después de 1 segundo
+            this.time.delayedCall(250, () => {
+                playerTwoHealth = Math.max(playerTwoHealth - 10, 0); // Evitar que la salud sea negativa
+                updateHealthBar();
+            });
+        }
+    }
+
+    // Lógica de ataque para el jugador uno Right
     if (attackKeyPlayer.isDown && !isAttackingPlayer) {
         isAttackingPlayer = true;
         player.anims.play('attack', true);
-        this.time.delayedCall(300, () => {
+        
+        // Establecer el frame de golpe durante 1 segundo
+        this.time.delayedCall(250, () => {
             isAttackingPlayer = false;
             player.anims.play('turn', true);
         });
 
         // Verificar si el jugador dos está en rango de ataque
         if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 20) {
-            // Aplicar daño al jugador dos
-            playerTwoHealth -= 10;
-            updateHealthBar();
+            // Aplicar daño al jugador dos después de 1 segundo
+            this.time.delayedCall(250, () => {
+                playerTwoHealth = Math.max(playerTwoHealth - 10, 0); // Evitar que la salud sea negativa
+                updateHealthBar();
+            });
         }
     }
 
-     // Lógica de ataque para el jugador uno
-     if (attackKeyPlayer.isDown && !isAttackingPlayer) {
+    //Lógica de ataque del jugado dos Left
+    if (attackKeyPlayerTwo.isDown && !isAttackingPlayer) {
         isAttackingPlayer = true;
-        player.anims.play('attack', true);
-        this.time.delayedCall(300, () => {
-            isAttackingPlayer = false;
-            player.anims.play('turn', true);
-        });
-
-        // Verificar si el jugador dos está en rango de ataque
-        if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 20) {
-            // Aplicar daño al jugador dos
-            playerTwoHealth = Math.max(playerTwoHealth - 10, 0); // Evitar que la salud sea negativa
-            updateHealthBar();
-        }
-    }
-
-    // Lógica de ataque para el jugador dos
-    if (attackKeyPlayerTwo.isDown && !isAttackingPlayerTwo) {
-        isAttackingPlayerTwo = true;
         playerTwo.anims.play('attackPlayerTwo', true);
-        this.time.delayedCall(300, () => {
-            isAttackingPlayerTwo = false;
+        
+        // Establecer el frame de golpe durante 1 segundo
+        this.time.delayedCall(250, () => {
+            isAttackingPlayer = false;
             playerTwo.anims.play('turnPlayerTwo', true);
         });
 
         // Verificar si el jugador uno está en rango de ataque
         if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 20) {
-            // Aplicar daño al jugador uno
-            playerHealth = Math.max(playerHealth - 10, 0); // Evitar que la salud sea negativa
-            updateHealthBar();
+            // Aplicar daño al jugador dos después de 1 segundo
+            this.time.delayedCall(250, () => {
+                playerHealth = Math.max(playerHealth - 10, 0); // Evitar que la salud sea negativa
+                updateHealthBar();
+            });
+        }
+    }
+
+    //Lógica de atauqe de jugador dos Right
+    if (attackKeyPlayerTwoRight.isDown && !isAttackingPlayer) {
+        isAttackingPlayer = true;
+        playerTwo.anims.play('attackPlayerTwoRight', true);
+        
+        // Establecer el frame de golpe durante 1 segundo
+        this.time.delayedCall(250, () => {
+            isAttackingPlayer = false;
+            playerTwo.anims.play('turnPlayerTwo', true);
+        });
+
+        // Verificar si el jugador uno está en rango de ataque
+        if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 20) {
+            // Aplicar daño al jugador dos después de 1 segundo
+            this.time.delayedCall(250, () => {
+                playerHealth = Math.max(playerHealth - 10, 0); // Evitar que la salud sea negativa
+                updateHealthBar();
+            });
         }
     }
 }
@@ -323,8 +344,5 @@ function updateHealthBar() {
     if (playerHealth <= 0 || playerTwoHealth <= 0) {
         // Muestra un alert de Game Over
         alert("Game Over");
-
-        // Puedes agregar más lógica aquí, como reiniciar el juego
-        // o redirigir a otra página, según tus necesidades.
     }
 }

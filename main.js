@@ -205,6 +205,11 @@ const jumpCooldown = 800; // Tiempo en milisegundos para evitar saltos múltiple
 let lastKeyPressed;
 let lastKeyPressedPlayerTwo;
 
+let lastMovementDirectionPlayerOne = null;  // null indica que no hay movimiento
+let lastMovementDirectionPlayerTwo = null;
+
+let playerKnockbackDistance = 100; // Ajusta la distancia de retroceso según tus necesidades
+let playerJumpHeight = 50;
 
 function update() {
     // Agregar movimiento del jugador con las teclas
@@ -229,14 +234,18 @@ function update() {
     if (keyA.isDown) {
         player.setVelocityX(-260);
         lastKeyPressed = 'A';
+        lastMovementDirectionPlayerOne = 'left';
     } else if (keyD.isDown) {
         player.setVelocityX(260);
         lastKeyPressed = 'D';
+        lastMovementDirectionPlayerOne = 'front';
     } else if (keyS.isDown) {
         player.setVelocityY(260);
         lastKeyPressed = 'S';
+        lastMovementDirectionPlayerOne = 'right';
     } else {
         player.setVelocityX(0);
+        lastMovementDirectionPlayerOne = null;
     }
 
     // Determinar la animación basada en la velocidad y la última tecla presionada
@@ -333,11 +342,11 @@ function update() {
         playerTwo.setAccelerationY(0);
     }
 
-     // Lógica de ataque para el jugador uno Left
-    if (attackKeyPlayerRight.isDown && !isAttackingPlayer) {
+    // Lógica de ataque para el jugador uno Left
+    if (attackKeyPlayerRight.isDown && !isAttackingPlayer && lastMovementDirectionPlayerOne === 'front') {
         isAttackingPlayer = true;
         player.anims.play('attackRight', true);
-        
+
         // Establecer el frame de golpe durante 250 milisegundos
         this.time.delayedCall(250, () => {
             isAttackingPlayer = false;
@@ -350,15 +359,35 @@ function update() {
             this.time.delayedCall(250, () => {
                 playerTwoHealth = Math.max(playerTwoHealth - 10, 0); // Evitar que la salud sea negativa
                 updateHealthBar();
+
+                  // Aplicar retroceso suavizado al jugador dos
+                this.tweens.add({
+                    targets: playerTwo,
+                    x: playerTwo.x + playerKnockbackDistance,
+                    duration: 100,  // Ajusta la duración según tu preferencia
+                    ease: 'Ease-In-Out',
+                    repeat: 0,
+                    yoyo: false
+                });
+
+                    // Aplicar un pequeño salto suavizado al jugador dos en el eje Y
+                this.tweens.add({
+                    targets: playerTwo,
+                    y: playerTwo.y - playerJumpHeight,
+                    duration: 100,  // Ajusta la duración según tu preferencia
+                    ease: 'Ease-In-Out',
+                    repeat: 0,
+                    yoyo: true
+                });
             });
         }
     }
 
     // Lógica de ataque para el jugador uno Right
-    if (attackKeyPlayer.isDown && !isAttackingPlayer) {
+    if (attackKeyPlayer.isDown && !isAttackingPlayer && lastMovementDirectionPlayerOne === 'left') {
         isAttackingPlayer = true;
         player.anims.play('attack', true);
-        
+
         // Establecer el frame de golpe durante 250 milisegundos
         this.time.delayedCall(250, () => {
             isAttackingPlayer = false;
@@ -371,48 +400,111 @@ function update() {
             this.time.delayedCall(250, () => {
                 playerTwoHealth = Math.max(playerTwoHealth - 10, 0); // Evitar que la salud sea negativa
                 updateHealthBar();
+                 // Aplicar retroceso suavizado al jugador dos
+                this.tweens.add({
+                    targets: playerTwo,
+                    x: playerTwo.x - playerKnockbackDistance,
+                    duration: 100,  // Ajusta la duración según tu preferencia
+                    ease: 'Ease-In-Out',
+                    repeat: 0,
+                    yoyo: false
+                });
+
+                    // Aplicar un pequeño salto suavizado al jugador dos en el eje Y
+                this.tweens.add({
+                    targets: playerTwo,
+                    y: playerTwo.y - playerJumpHeight,
+                    duration: 100,  // Ajusta la duración según tu preferencia
+                    ease: 'Ease-In-Out',
+                    repeat: 0,
+                    yoyo: true
+            });
             });
         }
     }
 
-    //Lógica de ataque del jugado dos Left
-    if (attackKeyPlayerTwo.isDown && !isAttackingPlayer) {
-        isAttackingPlayer = true;
+    // Lógica de ataque para el jugador dos Left
+    if (attackKeyPlayerTwo.isDown && !isAttackingPlayerTwo && lastKeyPressedPlayerTwo === 1) {
+        isAttackingPlayerTwo = true;
         playerTwo.anims.play('attackPlayerTwo', true);
-        
+
         // Establecer el frame de golpe durante 250 milisegundos
         this.time.delayedCall(250, () => {
-            isAttackingPlayer = false;
-            playerTwo.anims.play('turnPlayerTwo', true);
+            isAttackingPlayerTwo = false;
+            playerTwo.anims.play('idleFrontPlayerTwo', true);
         });
 
         // Verificar si el jugador uno está en rango de ataque
         if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 100) {
-            // Aplicar daño al jugador dos después de 250 milisegundos
+            // Aplicar daño al jugador uno después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerHealth = Math.max(playerHealth - 10, 0); // Evitar que la salud sea negativa
                 updateHealthBar();
+
+                 // Aplicar retroceso suavizado al jugador dos
+                 this.tweens.add({
+                    targets: player,
+                    x: player.x - playerKnockbackDistance,
+                    duration: 100,  // Ajusta la duración según tu preferencia
+                    ease: 'Ease-In-Out',
+                    repeat: 0,
+                    yoyo: false
+                });
+
+                    // Aplicar un pequeño salto suavizado al jugador dos en el eje Y
+                this.tweens.add({
+                    targets: player,
+                    y: player.y - playerJumpHeight,
+                    duration: 100,  // Ajusta la duración según tu preferencia
+                    ease: 'Ease-In-Out',
+                    repeat: 0,
+                    yoyo: true
+            });
+
+
+                
             });
         }
     }
 
-    //Lógica de atauqe de jugador dos Right
-    if (attackKeyPlayerTwoRight.isDown && !isAttackingPlayer) {
-        isAttackingPlayer = true;
+    // Lógica de ataque para el jugador dos Right
+    if (attackKeyPlayerTwoRight.isDown && !isAttackingPlayerTwo && lastKeyPressedPlayerTwo === 2) {
+        isAttackingPlayerTwo = true;
         playerTwo.anims.play('attackPlayerTwoRight', true);
-        
+
         // Establecer el frame de golpe durante 250 milisegundos
         this.time.delayedCall(250, () => {
-            isAttackingPlayer = false;
-            playerTwo.anims.play('turnPlayerTwo', true);
+            isAttackingPlayerTwo = false;
+            playerTwo.anims.play('idleLeftPlayerTwo', true);
         });
 
         // Verificar si el jugador uno está en rango de ataque
         if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 100) {
-            // Aplicar daño al jugador dos después de 250 milisegundos
+            // Aplicar daño al jugador uno después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerHealth = Math.max(playerHealth - 10, 0); // Evitar que la salud sea negativa
                 updateHealthBar();
+
+                // Aplicar retroceso suavizado al jugador dos
+                this.tweens.add({
+                    targets: player,
+                    x: player.x + playerKnockbackDistance,
+                    duration: 100,  // Ajusta la duración según tu preferencia
+                    ease: 'Ease-In-Out',
+                    repeat: 0,
+                    yoyo: false
+                });
+
+                    // Aplicar un pequeño salto suavizado al jugador dos en el eje Y
+                this.tweens.add({
+                    targets: player,
+                    y: player.y - playerJumpHeight,
+                    duration: 100,  // Ajusta la duración según tu preferencia
+                    ease: 'Ease-In-Out',
+                    repeat: 0,
+                    yoyo: true
+                });
+                
             });
         }
     }

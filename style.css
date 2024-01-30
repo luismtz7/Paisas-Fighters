@@ -150,3 +150,23 @@ body {
         opacity: 0;
     }
 }
+
+
+.filtro {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 0, 0, 0.5); /* Rojo semitransparente */
+    animation: parpadeo 1s infinite alternate; /* Animación de parpadeo */
+}
+
+@keyframes parpadeo {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.5;
+    }
+}

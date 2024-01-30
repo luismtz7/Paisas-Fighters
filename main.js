@@ -47,7 +47,7 @@ let isAttackingPlayerTwo = false;
 
 function create() {
 
-    
+   
 
     let backgroundImage = this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setName('background');
     backgroundImage.setDisplaySize(window.innerWidth, window.innerHeight);
@@ -219,7 +219,7 @@ let lastKeyPressedPlayerTwo;
 let lastMovementDirectionPlayerOne = null;  // null indica que no hay movimiento
 let lastMovementDirectionPlayerTwo = null;
 
-let playerKnockbackDistance = 100; // Ajusta la distancia de retroceso según tus necesidades
+let playerKnockbackDistance = 100; // Ajusta la distancia de retroceso
 let playerJumpHeight = 50;
 
 let gameFrozen = false;
@@ -396,7 +396,7 @@ function update() {
                 this.tweens.add({
                     targets: playerTwo,
                     x: playerTwo.x + playerKnockbackDistance,
-                    duration: 100,  // Ajusta la duración según tu preferencia
+                    duration: 100,  // Ajusta la duración
                     ease: 'Ease-In-Out',
                     repeat: 0,
                     yoyo: false
@@ -406,7 +406,7 @@ function update() {
                 this.tweens.add({
                     targets: playerTwo,
                     y: playerTwo.y - playerJumpHeight,
-                    duration: 100,  // Ajusta la duración según tu preferencia
+                    duration: 100,  // Ajusta la duración
                     ease: 'Ease-In-Out',
                     repeat: 0,
                     yoyo: true
@@ -438,7 +438,7 @@ function update() {
                 this.tweens.add({
                     targets: playerTwo,
                     x: playerTwo.x - playerKnockbackDistance,
-                    duration: 100,  // Ajusta la duración según tu preferencia
+                    duration: 100,  // Ajusta la duración
                     ease: 'Ease-In-Out',
                     repeat: 0,
                     yoyo: false
@@ -448,7 +448,7 @@ function update() {
                 this.tweens.add({
                     targets: playerTwo,
                     y: playerTwo.y - playerJumpHeight,
-                    duration: 100,  // Ajusta la duración según tu preferencia
+                    duration: 100,  // Ajusta la duración
                     ease: 'Ease-In-Out',
                     repeat: 0,
                     yoyo: true
@@ -480,7 +480,7 @@ function update() {
                  this.tweens.add({
                     targets: player,
                     x: player.x - playerKnockbackDistance,
-                    duration: 100,  // Ajusta la duración según tu preferencia
+                    duration: 100,  // Ajusta la duración
                     ease: 'Ease-In-Out',
                     repeat: 0,
                     yoyo: false
@@ -490,7 +490,7 @@ function update() {
                 this.tweens.add({
                     targets: player,
                     y: player.y - playerJumpHeight,
-                    duration: 100,  // Ajusta la duración según tu preferencia
+                    duration: 100,  // Ajusta la duración
                     ease: 'Ease-In-Out',
                     repeat: 0,
                     yoyo: true
@@ -524,7 +524,7 @@ function update() {
                 this.tweens.add({
                     targets: player,
                     x: player.x + playerKnockbackDistance,
-                    duration: 100,  // Ajusta la duración según tu preferencia
+                    duration: 100,  // Ajusta la duración
                     ease: 'Ease-In-Out',
                     repeat: 0,
                     yoyo: false
@@ -534,7 +534,7 @@ function update() {
                 this.tweens.add({
                     targets: player,
                     y: player.y - playerJumpHeight,
-                    duration: 100,  // Ajusta la duración según tu preferencia
+                    duration: 100,  // Ajusta la duración
                     ease: 'Ease-In-Out',
                     repeat: 0,
                     yoyo: true
@@ -544,7 +544,7 @@ function update() {
         }
     }
 
-    
+
 }
 
 let gameOver = false;
@@ -585,19 +585,18 @@ function updateHealthBar() {
     healthBar.fillStyle(0x39EF00, 1); // Color verde
     healthBar.fillRect(playerTwoBarX, playerTwoBarY, playerTwoBarWidth, barHeight); // Ancho proporcional a los puntos de vida del jugador dos
 
-    // Tu condición para mostrar "perdiste"
 if (playerHealth <= 0 ) {
     // Muestra el elemento "perdiste" para el jugador uno
     imgPerdisteElement.style.display = 'block';
     imgPerdistePlayer.style.display = 'block';
-    imgPerdistePlayerTwo.style.display = 'none'; // Asegúrate de ocultar el del jugador dos
+    imgPerdistePlayerTwo.style.display = 'none'; 
 
     // Congela el juego para el jugador uno
     gameFrozen = true;
 } else if (playerTwoHealth <= 0 ) {
     // Muestra el elemento "perdiste" para el jugador dos
     imgPerdisteElement.style.display = 'block';
-    imgPerdistePlayer.style.display = 'none'; // Asegúrate de ocultar el del jugador uno
+    imgPerdistePlayer.style.display = 'none'; 
     imgPerdistePlayerTwo.style.display = 'block';
 
     // Congela el juego para el jugador dos
@@ -611,9 +610,22 @@ if (playerHealth <= 0 ) {
     // Descongela el juego si ambos jugadores tienen salud positiva
     gameFrozen = false;
 }
+
+const filtroElement = document.querySelector('.filtro');
+
+    // Verifica si la vida de alguno de los jugadores es igual o menor al 50%
+    if (playerHealth <= 50 || playerTwoHealth <= 50) {
+        // Si la vida es menor o igual a 50, muestra el filtro y activa la animación
+        filtroElement.style.display = 'block';
+        filtroElement.style.animation = 'parpadeo 1s infinite alternate';
+    } else {
+        // Si la vida es mayor a 50, oculta el filtro y desactiva la animación
+        filtroElement.style.display = 'none';
+        filtroElement.style.animation = 'none';
+    }
 }
 
-// Suponiendo que ya tienes la referencia a .imgPerdiste
+// Referencias
 let imgPerdisteElement = document.querySelector('.imgPerdiste');
 let imgPerdistePlayer = document.querySelector('.imgJugador');
 let imgPerdistePlayerTwo = document.querySelector('.imgJugadorDos');

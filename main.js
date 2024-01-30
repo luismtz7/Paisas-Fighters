@@ -17,12 +17,7 @@ let config = {
     }
 };
 
-
 let game = new Phaser.Game(config);
-
-
-
-
 
 function preload() {
     // Carga de imágenes y otros recursos
@@ -31,12 +26,8 @@ function preload() {
     // Carga de spritesheet del segundo jugador "playerTwo"
     this.load.spritesheet('playerTwo', 'assets/playerTwo.png', { frameWidth: 94, frameHeight: 120 });
     // Cargar sonidos
-    this.load.audio('soundtrack', 'mp3/soundtrack.mp3');
 
-this.load.on('complete', () => {
-    this.soundtrack = this.sound.add('soundtrack', { volume: 0.5, loop: true });
-    this.soundtrack.play();
-});
+    this.load.image('perdiste', 'assets/perdistepues.png');
 
     this.load.audio('golpe', 'mp3/golpe.mp3');
    
@@ -56,11 +47,10 @@ let isAttackingPlayerTwo = false;
 
 function create() {
 
-   
+    
 
     let backgroundImage = this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setName('background');
     backgroundImage.setDisplaySize(window.innerWidth, window.innerHeight);
-
     // Creación de escenario y objetos
     // Creación del primer jugador
     player = this.physics.add.sprite(500, 600, 'player');
@@ -73,7 +63,7 @@ function create() {
     player.setOffset(0, 0);
 
     // Creación del segundo jugador
-    playerTwo = this.physics.add.sprite(800, 600, 'playerTwo');
+    playerTwo = this.physics.add.sprite(900, 600, 'playerTwo');
     playerTwo.setCollideWorldBounds(true);
 
     // Establecer el tamaño de la hitbox del segundo jugador
@@ -140,7 +130,7 @@ function create() {
 
     this.anims.create({
         key: 'turn',
-        frames: [{ key: 'playerTwo', frame: 7 }],
+        frames: [{ key: 'player', frame: 7 }],
         frameRate: 20,
     });
 
@@ -207,14 +197,13 @@ function create() {
     cursorsPlayerTwo = this.input.keyboard.createCursorKeys();
 
     //Ataque
-    attackKeyPlayer = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
-    attackKeyPlayerRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+    attackKeyPlayer = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.V);
+    attackKeyPlayerRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.B);
     attackKeyPlayerTwo = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O);
     attackKeyPlayerTwoRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
 
     // Sonido de Golpe
     this.sonidoGolpe = this.sound.add('golpe');
-    this.soundtrack = this.sound.add('soundtrack', { volume: 100, loop: true });
 
 }
 
@@ -233,8 +222,27 @@ let lastMovementDirectionPlayerTwo = null;
 let playerKnockbackDistance = 100; // Ajusta la distancia de retroceso según tus necesidades
 let playerJumpHeight = 50;
 
+let gameFrozen = false;
+
 function update() {
-    this.soundtrack.play();
+    // Verificación de juego congelado
+    if (gameFrozen) {
+        // Detener la entrada del teclado y establecer velocidades en cero para ambos jugadores
+        cursors.left.reset();
+        cursors.right.reset();
+        cursors.up.reset();
+        cursors.down.reset();
+
+        cursorsPlayerTwo.left.reset();
+        cursorsPlayerTwo.right.reset();
+        cursorsPlayerTwo.up.reset();
+        cursorsPlayerTwo.down.reset();
+
+        player.setVelocity(0, 0);
+        playerTwo.setVelocity(0, 0);
+
+        return; // No actualiza el juego si está congelado
+    }
     // Agregar movimiento del jugador con las teclas
     // Reiniciar velocidad del jugador
     player.setVelocity(0, player.body.velocity.y);
@@ -255,15 +263,15 @@ function update() {
 
     // Verificar las teclas presionadas para el primer jugador
     if (keyA.isDown) {
-        player.setVelocityX(-260);
+        player.setVelocityX(-360);
         lastKeyPressed = 'A';
         lastMovementDirectionPlayerOne = 'left';
     } else if (keyD.isDown) {
-        player.setVelocityX(260);
+        player.setVelocityX(360);
         lastKeyPressed = 'D';
         lastMovementDirectionPlayerOne = 'front';
     } else if (keyS.isDown) {
-        player.setVelocityY(260);
+        player.setVelocityY(360);
         lastKeyPressed = 'S';
         lastMovementDirectionPlayerOne = 'right';
     } else {
@@ -312,13 +320,13 @@ function update() {
 
     // Verificar las teclas presionadas para el segundo jugador
     if (cursorsPlayerTwo.left.isDown) {
-        playerTwo.setVelocityX(-260);
+        playerTwo.setVelocityX(-360);
         lastKeyPressedPlayerTwo = 1;
     } else if (cursorsPlayerTwo.right.isDown) {
-        playerTwo.setVelocityX(260);
+        playerTwo.setVelocityX(360);
         lastKeyPressedPlayerTwo = 2;
     } else if (cursorsPlayerTwo.down.isDown) {
-        playerTwo.setVelocityY(260);
+        playerTwo.setVelocityY(360);
         lastKeyPressedPlayerTwo = 3;
     } else {
         playerTwo.setVelocityX(0);
@@ -378,12 +386,12 @@ function update() {
 
         // Verificar si el jugador dos está en rango de ataque
         if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 100) {
-            this.sonidoGolpe.play();
+            
             // Aplicar daño al jugador dos después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerTwoHealth = Math.max(playerTwoHealth - 10, 0); // Evitar que la salud sea negativa
                 updateHealthBar();
-
+                this.sonidoGolpe.play();
                   // Aplicar retroceso suavizado al jugador dos
                 this.tweens.add({
                     targets: playerTwo,
@@ -420,11 +428,12 @@ function update() {
 
         // Verificar si el jugador dos está en rango de ataque
         if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 100) {
-            this.sonidoGolpe.play();
+            
             // Aplicar daño al jugador dos después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerTwoHealth = Math.max(playerTwoHealth - 10, 0); // Evitar que la salud sea negativa
                 updateHealthBar();
+                this.sonidoGolpe.play();
                  // Aplicar retroceso suavizado al jugador dos
                 this.tweens.add({
                     targets: playerTwo,
@@ -461,12 +470,12 @@ function update() {
 
         // Verificar si el jugador uno está en rango de ataque
         if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 100) {
-            this.sonidoGolpe.play();
+            
             // Aplicar daño al jugador uno después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerHealth = Math.max(playerHealth - 10, 0); // Evitar que la salud sea negativa
                 updateHealthBar();
-
+                this.sonidoGolpe.play();
                  // Aplicar retroceso suavizado al jugador dos
                  this.tweens.add({
                     targets: player,
@@ -487,8 +496,6 @@ function update() {
                     yoyo: true
             });
 
-
-                
             });
         }
     }
@@ -506,11 +513,12 @@ function update() {
 
         // Verificar si el jugador uno está en rango de ataque
         if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 100) {
-            this.sonidoGolpe.play();
+            
             // Aplicar daño al jugador uno después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerHealth = Math.max(playerHealth - 10, 0); // Evitar que la salud sea negativa
                 updateHealthBar();
+                this.sonidoGolpe.play();
 
                 // Aplicar retroceso suavizado al jugador dos
                 this.tweens.add({
@@ -536,7 +544,10 @@ function update() {
         }
     }
 
+    
 }
+
+let gameOver = false;
 
 function updateHealthBar() {
     healthBar.clear();
@@ -574,17 +585,96 @@ function updateHealthBar() {
     healthBar.fillStyle(0x39EF00, 1); // Color verde
     healthBar.fillRect(playerTwoBarX, playerTwoBarY, playerTwoBarWidth, barHeight); // Ancho proporcional a los puntos de vida del jugador dos
 
-    if (playerHealth <= 0 || playerTwoHealth <= 0) {
-        // Muestra un alert de Game Over
-        alert("Game Over");
-    }
-    
+    // Tu condición para mostrar "perdiste"
+if (playerHealth <= 0 ) {
+    // Muestra el elemento "perdiste" para el jugador uno
+    imgPerdisteElement.style.display = 'block';
+    imgPerdistePlayer.style.display = 'block';
+    imgPerdistePlayerTwo.style.display = 'none'; // Asegúrate de ocultar el del jugador dos
+
+    // Congela el juego para el jugador uno
+    gameFrozen = true;
+} else if (playerTwoHealth <= 0 ) {
+    // Muestra el elemento "perdiste" para el jugador dos
+    imgPerdisteElement.style.display = 'block';
+    imgPerdistePlayer.style.display = 'none'; // Asegúrate de ocultar el del jugador uno
+    imgPerdistePlayerTwo.style.display = 'block';
+
+    // Congela el juego para el jugador dos
+    gameFrozen = true;
+} else {
+    // Oculta el elemento "perdiste" si ambos jugadores tienen salud positiva
+    imgPerdisteElement.style.display = 'none';
+    imgPerdistePlayer.style.display = 'none';
+    imgPerdistePlayerTwo.style.display = 'none';
+
+    // Descongela el juego si ambos jugadores tienen salud positiva
+    gameFrozen = false;
 }
+}
+
+// Suponiendo que ya tienes la referencia a .imgPerdiste
+let imgPerdisteElement = document.querySelector('.imgPerdiste');
+let imgPerdistePlayer = document.querySelector('.imgJugador');
+let imgPerdistePlayerTwo = document.querySelector('.imgJugadorDos');
 
 // Evento de clic para el botón "Play"
 document.getElementById('play-button').addEventListener('click', function () {
-    // Oculta la pantalla de carga de manera inmediata
-    document.getElementById('loading-screen').style.display = 'none';
+    // Reproduce sonido después de una pequeña demora
+    setTimeout(function () {
+        let audioClick = new Audio('mp3/contador.mp3');
+        audioClick.play();
 
+        // Oculta la pantalla de carga después de una pequeña demora
+        document.getElementById('loading-screen').style.display = 'none';
+
+        // Muestra el elemento imgContador con una animación
+        showCountdownAnimation();
+    }, 100);
 });
+
+
+function showCountdownAnimation() {
+    // Crea elementos de imagen para el contador
+    let imgCountUno = createImageElement('assets/Uno.png');
+    let imgCountDos = createImageElement('assets/Dos.png');
+    let imgCountTres = createImageElement('assets/Tres.png');
+
+    // Añade las imágenes al documento
+    document.body.appendChild(imgCountUno);
+    document.body.appendChild(imgCountDos);
+    document.body.appendChild(imgCountTres);
+
+    // Muestra las imágenes con animación
+    showImageWithAnimation(imgCountUno, 2000);
+    showImageWithAnimation(imgCountDos, 1000);  // Ajusta el tiempo según sea necesario
+    showImageWithAnimation(imgCountTres, 0); // Ajusta el tiempo según sea necesario
+}
+
+function createImageElement(src) {
+    let imgElement = document.createElement('img');
+    imgElement.src = src;
+    imgElement.style.position = 'absolute';
+    imgElement.style.top = '50%';
+    imgElement.style.left = '50%';
+    imgElement.style.transform = 'translate(-50%, -50%)';
+    imgElement.style.display = 'none'; // Inicialmente oculto
+    return imgElement;
+}
+
+function showImageWithAnimation(imgElement, delay) {
+    // Añade la imagen al documento después de un retraso
+    setTimeout(function () {
+        document.body.appendChild(imgElement);
+
+        // Muestra la imagen con una animación
+        imgElement.style.display = 'block';
+        imgElement.style.animation = 'slideUp 1s ease-in-out forwards';
+    }, delay);
+}
+
+
+
+
+
 

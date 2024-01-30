@@ -12,6 +12,49 @@
         <button id="play-button">Jugar</button>
     </section>
 
+    <audio id="background-music" loop>
+        <source src="mp3/soundtrack.mp3" type="audio/mp3">
+        Tu navegador no soporta la etiqueta de audio.
+    </audio>
+    
+    <!-- Resto de tu HTML -->
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var backgroundMusic = document.getElementById('background-music');
+    
+        // Obtén el volumen almacenado en localStorage (o establece un valor predeterminado si no existe)
+        var storedVolume = localStorage.getItem('backgroundMusicVolume');
+        backgroundMusic.volume = storedVolume ? parseFloat(storedVolume) : 0.3;
+    
+        // Reproduce automáticamente el soundtrack de fondo
+        backgroundMusic.play();
+    
+        // Guarda el volumen en localStorage antes de recargar la página
+        window.onbeforeunload = function () {
+            localStorage.setItem('backgroundMusicVolume', backgroundMusic.volume.toString());
+        };
+    });
+    </script>
+    
+
+    <section class="imgPerdiste">
+        <img src="assets/perdistepues.png" alt="Trulli">
+    </section>
+    
+    <section class="imgJugador">
+        <img src="assets/jugador.png" alt="Trulli">
+    </section>
+
+    <section class="imgJugadorDos">
+        <img src="assets/jugadorDos.png" alt="Trulli">
+    </section>
+
+    <section class="imgContador">
+        <img id="CountUno" src="assets/Uno.png" alt="Trulli">
+        <img id="CountDos" src="assets/Dos.png" alt="Trulli">
+        <img id="CountTres" src="assets/Tres.png" alt="Trulli">
+    </section>
 
     <script src="main.js"></script>
 </body>

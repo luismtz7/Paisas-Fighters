@@ -16,14 +16,14 @@ body {
     opacity: 1;
     transition: opacity 0.5s;
     background-image: url('assets/inicio.png');
-    background-size: cover; /* Ajuste para que el fondo se ajuste sin distorsionar */
+    background-size: cover;
     width: 100%;
     height: 100%;
 }
 
 #play-button {
-    margin: auto; /* Centrar tanto horizontal como verticalmente */
-    padding: 12px 35px; /* Ajuste del padding según tu preferencia */
+    margin: auto;
+    padding: 12px 35px;
     cursor: pointer;
     border: none;
     border-radius: 8px;
@@ -36,6 +36,8 @@ body {
     letter-spacing: 1px;
     box-shadow: 0 0 0 3px #2f2e41, 0 6px 0 #2f2e41;
     transition: all 0.1s ease, background 0.3s ease;
+    position: relative;
+    z-index: 2;
 }
 
 #play-button:hover,
@@ -46,4 +48,105 @@ body {
 #play-button:active {
     box-shadow: 0 0 0 3px #2f2e41, 0 4px 0 #2f2e41;
     transform: translateY(2px);
+}
+
+#perdiste {
+    display: block;
+}
+
+.imgPerdiste {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    text-align: center;
+    z-index: 10;
+}
+
+.imgJugador{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 20%);
+    display: flex;
+    text-align: center;
+    z-index: 10;
+}
+
+.imgJugadorDos{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 20%);
+    display: flex;
+    text-align: center;
+    z-index: 10;
+}
+
+.imgContador {
+    display: block;
+}
+
+#CountUno,
+#CountDos,
+#CountTres {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    text-align: center;
+    z-index: 5;
+    opacity: 0; /* Agregado: Inicialmente invisible */
+    animation: slideUp 3s ease-in-out forwards; /* Agregado: forwards para que mantenga la última posición */
+}
+
+#CountTres {
+    animation-delay: 0s;
+}
+
+#CountDos {
+    animation-delay: 0s;
+}
+
+#CountUno {
+    animation-delay: 0s;
+}
+
+@keyframes slideUp {
+    0%, 25% {
+        transform: translate(-50%, -50%) scaleY(0); /* Agregado: Desaparecer durante los primeros 25% */
+        opacity: 0;
+    }
+    50%, 75% {
+        transform: translate(-50%, -50%) scaleY(1); /* Agregado: Aparecer durante el siguiente 25% */
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scaleY(0); /* Agregado: Desaparecer durante los últimos 25% */
+        opacity: 0;
+    }
+}
+
+
+.imgContador {
+    display: block;
+    opacity: 0; /* Inicialmente invisible */
+    transition: opacity 0s; /* Transición de opacidad */
+}
+
+@keyframes slideUp {
+    0%, 25% {
+        transform: translate(-50%, -50%) scaleY(0);
+        opacity: 0;
+    }
+    50%, 75% {
+        transform: translate(-50%, -50%) scaleY(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scaleY(0);
+        opacity: 0;
+    }
 }

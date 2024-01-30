@@ -17,7 +17,12 @@ let config = {
     }
 };
 
+
 let game = new Phaser.Game(config);
+
+
+
+
 
 function preload() {
     // Carga de imágenes y otros recursos
@@ -25,6 +30,16 @@ function preload() {
     this.load.spritesheet('player', 'assets/player.png', { frameWidth: 94, frameHeight: 120 });
     // Carga de spritesheet del segundo jugador "playerTwo"
     this.load.spritesheet('playerTwo', 'assets/playerTwo.png', { frameWidth: 94, frameHeight: 120 });
+    // Cargar sonidos
+    this.load.audio('soundtrack', 'mp3/soundtrack.mp3');
+
+this.load.on('complete', () => {
+    this.soundtrack = this.sound.add('soundtrack', { volume: 0.5, loop: true });
+    this.soundtrack.play();
+});
+
+    this.load.audio('golpe', 'mp3/golpe.mp3');
+   
 }
 
 let playerHealth = 100;
@@ -40,6 +55,8 @@ let isAttackingPlayer = false;
 let isAttackingPlayerTwo = false;
 
 function create() {
+
+   
 
     let backgroundImage = this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setName('background');
     backgroundImage.setDisplaySize(window.innerWidth, window.innerHeight);
@@ -194,6 +211,11 @@ function create() {
     attackKeyPlayerRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
     attackKeyPlayerTwo = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O);
     attackKeyPlayerTwoRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
+
+    // Sonido de Golpe
+    this.sonidoGolpe = this.sound.add('golpe');
+    this.soundtrack = this.sound.add('soundtrack', { volume: 100, loop: true });
+
 }
 
 let isPlayerOnGround = true;
@@ -212,6 +234,7 @@ let playerKnockbackDistance = 100; // Ajusta la distancia de retroceso según tu
 let playerJumpHeight = 50;
 
 function update() {
+    this.soundtrack.play();
     // Agregar movimiento del jugador con las teclas
     // Reiniciar velocidad del jugador
     player.setVelocity(0, player.body.velocity.y);
@@ -355,6 +378,7 @@ function update() {
 
         // Verificar si el jugador dos está en rango de ataque
         if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 100) {
+            this.sonidoGolpe.play();
             // Aplicar daño al jugador dos después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerTwoHealth = Math.max(playerTwoHealth - 10, 0); // Evitar que la salud sea negativa
@@ -396,6 +420,7 @@ function update() {
 
         // Verificar si el jugador dos está en rango de ataque
         if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 100) {
+            this.sonidoGolpe.play();
             // Aplicar daño al jugador dos después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerTwoHealth = Math.max(playerTwoHealth - 10, 0); // Evitar que la salud sea negativa
@@ -436,6 +461,7 @@ function update() {
 
         // Verificar si el jugador uno está en rango de ataque
         if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 100) {
+            this.sonidoGolpe.play();
             // Aplicar daño al jugador uno después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerHealth = Math.max(playerHealth - 10, 0); // Evitar que la salud sea negativa
@@ -480,6 +506,7 @@ function update() {
 
         // Verificar si el jugador uno está en rango de ataque
         if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 100) {
+            this.sonidoGolpe.play();
             // Aplicar daño al jugador uno después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerHealth = Math.max(playerHealth - 10, 0); // Evitar que la salud sea negativa
@@ -508,6 +535,7 @@ function update() {
             });
         }
     }
+
 }
 
 function updateHealthBar() {
@@ -550,4 +578,13 @@ function updateHealthBar() {
         // Muestra un alert de Game Over
         alert("Game Over");
     }
+    
 }
+
+// Evento de clic para el botón "Play"
+document.getElementById('play-button').addEventListener('click', function () {
+    // Oculta la pantalla de carga de manera inmediata
+    document.getElementById('loading-screen').style.display = 'none';
+
+});
+

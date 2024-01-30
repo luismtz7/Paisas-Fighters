@@ -12,7 +12,6 @@ body {
     text-align: center;
     color: #fff;
     display: flex;
-    flex-direction: column;
     opacity: 1;
     transition: opacity 0.5s;
     background-image: url('assets/inicio.png');
@@ -169,4 +168,29 @@ body {
     100% {
         opacity: 0.5;
     }
+}
+
+
+article {
+    width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    color: #2f2e41;
+}
+
+h2 {
+    color: #000000;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 10px;
 }

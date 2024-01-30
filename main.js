@@ -6,7 +6,7 @@ let config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 90000 },
+            gravity: { y: 1100 },
             debug: false
         }
     },
@@ -45,33 +45,31 @@ function create() {
     backgroundImage.setDisplaySize(window.innerWidth, window.innerHeight);
 
     // Creación de escenario y objetos
-    // Cambia las coordenadas iniciales del jugador
-    player = this.physics.add.sprite(700, window.innerHeight - 120, 'player');
+    // Creación del primer jugador
+    player = this.physics.add.sprite(500, 600, 'player');
 
     player.setCollideWorldBounds(true);
-    player.setBounce(0.2);
 
     // Establecer el tamaño de la hitbox del jugador
-    player.setSize(94, 120);
-    // Centrar la hitbox (opcional, depende del tamaño de tu sprite)
+    player.setSize(75, 120);
+    // Centrar la hitbox 
     player.setOffset(0, 0);
 
-    // Agregar colisionador con el suelo
-    this.physics.add.collider(player, this.children.getByName('background'));
-
     // Creación del segundo jugador
-    playerTwo = this.physics.add.sprite(800, 300, 'playerTwo');
+    playerTwo = this.physics.add.sprite(800, 600, 'playerTwo');
     playerTwo.setCollideWorldBounds(true);
-    playerTwo.setBounce(0.2);
 
     // Establecer el tamaño de la hitbox del segundo jugador
-    playerTwo.setSize(94, 120);
-    // Centrar la hitbox (opcional, depende del tamaño de tu sprite)
+    playerTwo.setSize(75, 120);
+    // Centrar la hitbox
     playerTwo.setOffset(0, 0);
 
     // Agregar colisionador con el suelo
     this.physics.add.collider(player, this.children.getByName('background'));
     this.physics.add.collider(playerTwo, this.children.getByName('background'));
+
+    // Colisión entre jugadores
+    this.physics.add.collider(player, playerTwo);
 
 
     this.anims.create({
@@ -82,16 +80,31 @@ function create() {
     });
 
     this.anims.create({
-        key: 'turn',
-        frames: [{ key: 'player', frame: 7 }],
-        frameRate: 20,
-    });
-
-    this.anims.create({
         key: 'right',
         frames: this.anims.generateFrameNumbers('player', { start: 9, end: 13 }),
         frameRate: 10,
         repeat: -1
+    });
+
+     // Crear un fotograma estático para el jugador mirando a la izquierda
+     this.anims.create({
+        key: 'idleLeft',
+        frames: [{ key: 'player', frame: 6 }],
+        frameRate: 1,
+    });
+
+    // Crear un fotograma estático para el jugador mirando a la derecha
+    this.anims.create({
+        key: 'idleRight',
+        frames: [{ key: 'player', frame: 8 }],
+        frameRate: 1,
+    });
+
+    // Crear un fotograma estático para el jugador mirando hacia adelante
+    this.anims.create({
+        key: 'idleFront',
+        frames: [{ key: 'player', frame: 7 }],
+        frameRate: 1,
     });
 
     this.anims.create({
@@ -108,9 +121,13 @@ function create() {
         repeat: 0
     });
 
+    this.anims.create({
+        key: 'turn',
+        frames: [{ key: 'playerTwo', frame: 7 }],
+        frameRate: 20,
+    });
 
-    cursors = this.input.keyboard.createCursorKeys();
-
+    // Configuración de animación del segundo jugador
     healthBar = this.add.graphics();
     updateHealthBar();
 
@@ -148,6 +165,28 @@ function create() {
         repeat: 0
     });
 
+     // Crear un fotograma estático para el jugador mirando a la izquierda
+     this.anims.create({
+        key: 'idleLeftPlayerTwo',
+        frames: [{ key: 'playerTwo', frame: 6 }],
+        frameRate: 1,
+    });
+
+    // Crear un fotograma estático para el jugador mirando a la derecha
+    this.anims.create({
+        key: 'idleRightPlayerTwo',
+        frames: [{ key: 'playerTwo', frame: 8 }],
+        frameRate: 1,
+    });
+
+    // Crear un fotograma estático para el jugador mirando hacia adelante
+    this.anims.create({
+        key: 'idleFrontPlayerTwo',
+        frames: [{ key: 'playerTwo', frame: 7 }],
+        frameRate: 1,
+    });
+
+    cursors = this.input.keyboard.createCursorKeys();
     cursorsPlayerTwo = this.input.keyboard.createCursorKeys();
 
     //Ataque
@@ -157,12 +196,22 @@ function create() {
     attackKeyPlayerTwoRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
 }
 
+let isPlayerOnGround = true;
+let isPlayerTwoOnGround = true;
+let jumpVelocity = -800; // Ajusta la velocidad de salto
+const gravity = 1200; // Ajusta la gravedad
+const jumpCooldown = 800; // Tiempo en milisegundos para evitar saltos múltiples
+
+let lastKeyPressed;
+let lastKeyPressedPlayerTwo;
+
+
 function update() {
-    // Agregar movimiento del jugador con las teclas de flecha
+    // Agregar movimiento del jugador con las teclas
     // Reiniciar velocidad del jugador
-    player.setVelocity(0, 0);
+    player.setVelocity(0, player.body.velocity.y);
     // Reiniciar velocidad del segundo jugador
-    playerTwo.setVelocity(0, 0);
+    playerTwo.setVelocity(0, playerTwo.body.velocity.y);
 
     // Declarar variables para asignar movimiento son las teclas "W,A,S,D"
     let keyA;
@@ -175,65 +224,129 @@ function update() {
     keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
 
+
+    // Verificar las teclas presionadas para el primer jugador
     if (keyA.isDown) {
         player.setVelocityX(-260);
-    }
-    if (keyS.isDown) {
-        player.setVelocityY(260);
-    }
-    if (keyD.isDown) {
+        lastKeyPressed = 'A';
+    } else if (keyD.isDown) {
         player.setVelocityX(260);
-    }
-    if (keyW.isDown) {
-        player.setVelocityY(-260);
-    }
-
-    // Verificar las teclas presionadas para el segundo jugador
-    if (cursorsPlayerTwo.left.isDown) {
-        playerTwo.setVelocityX(-260);
-    }
-    if (cursorsPlayerTwo.right.isDown) {
-        playerTwo.setVelocityX(260);
-    }
-    if (cursorsPlayerTwo.up.isDown) {
-        playerTwo.setVelocityY(-260);
-    }
-    if (cursorsPlayerTwo.down.isDown) {
-        playerTwo.setVelocityY(260);
+        lastKeyPressed = 'D';
+    } else if (keyS.isDown) {
+        player.setVelocityY(260);
+        lastKeyPressed = 'S';
+    } else {
+        player.setVelocityX(0);
     }
 
-    // Determinar la animación basada en la velocidad
+    // Determinar la animación basada en la velocidad y la última tecla presionada
     if (player.body.velocity.x < 0) {
         player.anims.play('left', true);
     } else if (player.body.velocity.x > 0) {
         player.anims.play('right', true);
     } else {
-        player.anims.play('turn', true);
+        // Usar la última tecla presionada para determinar el fotograma estático
+        switch (lastKeyPressed) {
+            case 'A':
+                player.anims.play('idleLeft', true);
+                break;
+            case 'D':
+                player.anims.play('idleRight', true);
+                break;
+            case 'S':
+                player.anims.play('idleFront', true);
+                break;
+            default:
+                player.anims.play('turn', true);
+        }
     }
 
-    // Determinar la animación basada en la velocidad para el segundo jugador
+    // Lógica de salto
+    if (keyW.isDown && isPlayerOnGround) {
+        // Solo permitir saltos si el jugador está en el suelo y ha pasado el tiempo de cooldown
+        player.setVelocityY(jumpVelocity);
+        isPlayerOnGround = false; // Marcar al jugador como no estando en el suelo
+        this.time.delayedCall(jumpCooldown, () => {
+            isPlayerOnGround = true;
+        });
+    }
+    
+    // Aplicar gravedad al salto
+    if (!isPlayerOnGround) {
+        player.setAccelerationY(gravity);
+    } else {
+        player.setAccelerationY(0); // Si está en el suelo, no aplicar gravedad
+    }
+
+    // Verificar las teclas presionadas para el segundo jugador
+    if (cursorsPlayerTwo.left.isDown) {
+        playerTwo.setVelocityX(-260);
+        lastKeyPressedPlayerTwo = 1;
+    } else if (cursorsPlayerTwo.right.isDown) {
+        playerTwo.setVelocityX(260);
+        lastKeyPressedPlayerTwo = 2;
+    } else if (cursorsPlayerTwo.down.isDown) {
+        playerTwo.setVelocityY(260);
+        lastKeyPressedPlayerTwo = 3;
+    } else {
+        playerTwo.setVelocityX(0);
+    }
+
+    // Determinar la animación basada en la velocidad y la última tecla presionada
     if (playerTwo.body.velocity.x < 0) {
         playerTwo.anims.play('leftPlayerTwo', true);
     } else if (playerTwo.body.velocity.x > 0) {
         playerTwo.anims.play('rightPlayerTwo', true);
+    } else if (cursorsPlayerTwo.down.isDown) {
+        playerTwo.anims.play('idleFrontPlayerTwo', true);
     } else {
-        playerTwo.anims.play('turnPlayerTwo', true);
+        // Usar la última tecla presionada para determinar el fotograma estático
+        switch (lastKeyPressedPlayerTwo) {
+            case 1:
+                playerTwo.anims.play('idleLeftPlayerTwo', true);
+                break;
+            case 2:
+                playerTwo.anims.play('idleRightPlayerTwo', true);
+                break;
+            case 3:
+                playerTwo.anims.play('idleFrontPlayerTwo', true);
+                break;
+            default:
+                playerTwo.anims.play('turnPlayerTwo', true);
+        }
+    }
+
+
+
+    // Lógica del salto para judador dos
+    if (cursorsPlayerTwo.up.isDown && isPlayerTwoOnGround) {
+        playerTwo.setVelocityY(jumpVelocity);
+        isPlayerTwoOnGround = false;
+        this.time.delayedCall(jumpCooldown, () => {
+            isPlayerTwoOnGround = true;
+        })
+    }
+
+    if (!isPlayerTwoOnGround){
+        playerTwo.setAccelerationY(gravity);
+    } else {
+        playerTwo.setAccelerationY(0);
     }
 
      // Lógica de ataque para el jugador uno Left
-     if (attackKeyPlayerRight.isDown && !isAttackingPlayer) {
+    if (attackKeyPlayerRight.isDown && !isAttackingPlayer) {
         isAttackingPlayer = true;
         player.anims.play('attackRight', true);
         
-        // Establecer el frame de golpe durante 1 segundo
+        // Establecer el frame de golpe durante 250 milisegundos
         this.time.delayedCall(250, () => {
             isAttackingPlayer = false;
             player.anims.play('turn', true);
         });
 
         // Verificar si el jugador dos está en rango de ataque
-        if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 20) {
-            // Aplicar daño al jugador dos después de 1 segundo
+        if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 100) {
+            // Aplicar daño al jugador dos después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerTwoHealth = Math.max(playerTwoHealth - 10, 0); // Evitar que la salud sea negativa
                 updateHealthBar();
@@ -246,15 +359,15 @@ function update() {
         isAttackingPlayer = true;
         player.anims.play('attack', true);
         
-        // Establecer el frame de golpe durante 1 segundo
+        // Establecer el frame de golpe durante 250 milisegundos
         this.time.delayedCall(250, () => {
             isAttackingPlayer = false;
             player.anims.play('turn', true);
         });
 
         // Verificar si el jugador dos está en rango de ataque
-        if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 20) {
-            // Aplicar daño al jugador dos después de 1 segundo
+        if (Phaser.Math.Distance.Between(player.x, player.y, playerTwo.x, playerTwo.y) < 100) {
+            // Aplicar daño al jugador dos después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerTwoHealth = Math.max(playerTwoHealth - 10, 0); // Evitar que la salud sea negativa
                 updateHealthBar();
@@ -267,15 +380,15 @@ function update() {
         isAttackingPlayer = true;
         playerTwo.anims.play('attackPlayerTwo', true);
         
-        // Establecer el frame de golpe durante 1 segundo
+        // Establecer el frame de golpe durante 250 milisegundos
         this.time.delayedCall(250, () => {
             isAttackingPlayer = false;
             playerTwo.anims.play('turnPlayerTwo', true);
         });
 
         // Verificar si el jugador uno está en rango de ataque
-        if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 20) {
-            // Aplicar daño al jugador dos después de 1 segundo
+        if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 100) {
+            // Aplicar daño al jugador dos después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerHealth = Math.max(playerHealth - 10, 0); // Evitar que la salud sea negativa
                 updateHealthBar();
@@ -288,15 +401,15 @@ function update() {
         isAttackingPlayer = true;
         playerTwo.anims.play('attackPlayerTwoRight', true);
         
-        // Establecer el frame de golpe durante 1 segundo
+        // Establecer el frame de golpe durante 250 milisegundos
         this.time.delayedCall(250, () => {
             isAttackingPlayer = false;
             playerTwo.anims.play('turnPlayerTwo', true);
         });
 
         // Verificar si el jugador uno está en rango de ataque
-        if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 20) {
-            // Aplicar daño al jugador dos después de 1 segundo
+        if (Phaser.Math.Distance.Between(playerTwo.x, playerTwo.y, player.x, player.y) < 100) {
+            // Aplicar daño al jugador dos después de 250 milisegundos
             this.time.delayedCall(250, () => {
                 playerHealth = Math.max(playerHealth - 10, 0); // Evitar que la salud sea negativa
                 updateHealthBar();
